@@ -6,11 +6,16 @@
     <Button
         android:id="@+id/camera"
         android:text="Capture to read"
+        android:textSize="15sp"
         android:textColor="@color/colorAccent"
         android:layout_margin="10dp"
+        android:paddingRight="40dp"
+        android:paddingLeft="20dp"
         android:background="@null"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:drawableLeft="@drawable/camera_icon"
+        android:layout_centerHorizontal="true"
+        android:layout_width="300dp"
+        android:layout_height="50dp" />
 
     <ListView
         android:id="@+id/lv_all_text"

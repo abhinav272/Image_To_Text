@@ -1,5 +1,6 @@
 package com.abhinavsharma.imagetotext;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -8,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.SparseArray;
@@ -16,9 +18,12 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.abhinavsharma.imagetotext.adapters.CustomListViewAdapter;
+import com.abhinavsharma.imagetotext.helper.Preferences;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 
@@ -31,6 +36,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private Button btnCamera;
     private ListView lvAllText;
     static final int REQUEST_IMAGE_CAPTURE = 1;
+    private AlertDialog alertDialog;
+    private ArrayList al;
+    private CustomListViewAdapter customListViewAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,6 +51,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private void initializeViews() {
         btnCamera = (Button) findViewById(R.id.camera);
         lvAllText = (ListView) findViewById(R.id.lv_all_text);
+        String recents = Preferences.getInstance().getRecents(getApplicationContext());
+        al = new Gson().fromJson(recents,ArrayList.class);
+        if (al != null) {
+            customListViewAdapter = new CustomListViewAdapter(this,al);
+            lvAllText.setAdapter(customListViewAdapter);
+        }
         btnCamera.setOnClickListener(this);
     }
 
@@ -66,7 +80,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    class MyAsyncTask extends AsyncTask<Bundle, Void, Void>{
+    class MyAsyncTask extends AsyncTask<Bundle, Void, Void> {
 
         private Context mContext;
         private ArrayList<String> al;
@@ -113,14 +127,26 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            if (al != null) {
+            if (al != null && al.size() > 0) {
                 Intent intent = new Intent(HomeActivity.this, TextViewer.class);
                 intent.putExtra("all_text", al);
-                Log.e(TAG, "onActivityResult: Size "+al.size());
+                Log.e(TAG, "onActivityResult: Size " + al.size());
                 startActivity(intent);
-            } else // show Dialog
+            } else {
+                showNoDataDialog();
+            }
             super.onPostExecute(aVoid);
         }
     }
 
+    private void showNoDataDialog() {
+        alertDialog = new AlertDialog.Builder(this)
+                .setTitle("No Data Captured")
+                .setMessage("Try to capture bigger characters !!")
+                .setIcon(R.mipmap.ic_launcher)
+                .setCancelable(true)
+                .create();
+
+        alertDialog.show();
+    }
 }
