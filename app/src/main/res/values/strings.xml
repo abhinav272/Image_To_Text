@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Image to Text</string>
+    <string name="low_storage_error">You are low on battery</string>
 </resources>

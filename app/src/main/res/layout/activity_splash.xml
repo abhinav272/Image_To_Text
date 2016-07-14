@@ -7,10 +7,17 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.abhinavsharma.imagetotext.MainActivity">
+    tools:context=".SplashActivity">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:textSize="30sp"
+        android:text="Image To Text"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textAllCaps="true"
+        android:layout_marginTop="100dp"
+        android:textColor="@color/colorAccent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
 </RelativeLayout>
