@@ -30,8 +30,10 @@ public class TextViewer extends AppCompatActivity {
 
     private void initializeViews() {
         al = getIntent().getStringArrayListExtra("all_text");
-        lvDisplay = (ListView) findViewById(R.id.lv_image_all_text);
-        CustomListViewAdapter customListViewAdapter = new CustomListViewAdapter(this,al);
-        lvDisplay.setAdapter(customListViewAdapter);
+        if (al != null && al.size() > 0) {
+            lvDisplay = (ListView) findViewById(R.id.lv_image_all_text);
+            CustomListViewAdapter customListViewAdapter = new CustomListViewAdapter(this, al);
+            lvDisplay.setAdapter(customListViewAdapter);
+        }
     }
 }
