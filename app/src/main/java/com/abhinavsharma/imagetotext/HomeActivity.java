@@ -1,8 +1,10 @@
 package com.abhinavsharma.imagetotext;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
@@ -60,13 +62,28 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            new MyAsyncTask(this).execute(extras);
+        }
+    }
+
+    class MyAsyncTask extends AsyncTask<Bundle, Void, Void>{
+
+        private Context mContext;
+        private ArrayList<String> al;
+
+        public MyAsyncTask(Context context) {
+            this.mContext = context;
+        }
+
+        @Override
+        protected Void doInBackground(Bundle... params) {
+            Bitmap imageBitmap = (Bitmap) params[0].get("data");
 //            mImageView.setImageBitmap(imageBitmap);
 
             Frame frame = new Frame.Builder()
                     .setBitmap(imageBitmap).build();
 
-            TextRecognizer textRecognizer = new TextRecognizer.Builder(this).build();
+            TextRecognizer textRecognizer = new TextRecognizer.Builder(mContext).build();
             if (!textRecognizer.isOperational()) {
                 Log.w(TAG, "Detector dependencies are not yet available.");
 
@@ -76,27 +93,34 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 boolean hasLowStorage = registerReceiver(null, lowstorageFilter) != null;
 
                 if (hasLowStorage) {
-                    Toast.makeText(this, R.string.low_storage_error, Toast.LENGTH_LONG).show();
+                    Toast.makeText(mContext, R.string.low_storage_error, Toast.LENGTH_LONG).show();
                     Log.w(TAG, getString(R.string.low_storage_error));
                 }
             }
 
             SparseArray<TextBlock> textBlockSparseArray = textRecognizer.detect(frame);
             if (textBlockSparseArray != null) {
-                ArrayList<String> al = new ArrayList<>();
+                al = new ArrayList<>();
                 for (int i = 0; i < textBlockSparseArray.size(); i++) {
                     if (textBlockSparseArray.valueAt(i).getValue() != null) {
                         al.add(textBlockSparseArray.valueAt(i).getValue());
                     }
                 }
-                if (al != null) {
-                    Intent intent = new Intent(HomeActivity.this, TextViewer.class);
-                    intent.putExtra("all_text", al);
-                    Log.e(TAG, "onActivityResult: Size "+al.size());
-                    startActivity(intent);
-                }
-            } else Log.e(TAG, "onActivityResult: No data found..");
 
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            if (al != null) {
+                Intent intent = new Intent(HomeActivity.this, TextViewer.class);
+                intent.putExtra("all_text", al);
+                Log.e(TAG, "onActivityResult: Size "+al.size());
+                startActivity(intent);
+            } else // show Dialog
+            super.onPostExecute(aVoid);
         }
     }
+
 }
