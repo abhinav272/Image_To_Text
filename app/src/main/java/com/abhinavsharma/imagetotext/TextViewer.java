@@ -43,6 +43,7 @@ public class TextViewer extends AppCompatActivity {
     public class UpdatePreferencesTask extends AsyncTask<ArrayList<String>, Void, Void>{
 
         private Context mContext;
+        private ArrayList recents;
 
         public UpdatePreferencesTask(Context mContext) {
             this.mContext = mContext;
@@ -50,7 +51,12 @@ public class TextViewer extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(ArrayList<String>... params) {
-            String jsonText = new Gson().toJson(al);
+            String jsonText = Preferences.getInstance().getRecents(mContext);
+            recents = new Gson().fromJson(jsonText,ArrayList.class);
+            if (recents == null) recents = new ArrayList();
+            recents.addAll(params[0]);
+            jsonText = new Gson().toJson(recents);
+            Log.e("doInBackground after :", jsonText);
             Preferences.getInstance().setRecents(mContext,jsonText);
             return null;
         }
