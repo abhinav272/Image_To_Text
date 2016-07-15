@@ -27,4 +27,5 @@ dependencies {
     compile 'com.google.android.gms:play-services-vision:9.0.0+'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.google.apis:google-api-services-vision:v1-rev19-1.22.0'
+    compile 'com.karumi:dexter:2.2.2'
 }

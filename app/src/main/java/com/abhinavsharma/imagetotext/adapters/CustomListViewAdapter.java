@@ -47,7 +47,7 @@ public class CustomListViewAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
-            convertView = mLayoutInflater.inflate(R.layout.single_text_item, null);
+            convertView = mLayoutInflater.inflate(R.layout.single_text_item, parent, false);
             viewHolder = new ViewHolder();
             viewHolder.tvString = (TextView) convertView.findViewById(R.id.tv_text);
             convertView.setTag(viewHolder);

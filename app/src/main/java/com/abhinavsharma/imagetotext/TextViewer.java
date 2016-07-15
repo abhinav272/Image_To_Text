@@ -21,6 +21,7 @@ import java.util.ArrayList;
 public class TextViewer extends AppCompatActivity {
 
     private ArrayList<String> al;
+    private ArrayList<String> imageArrayList;
     private ListView lvDisplay;
 
     @Override
