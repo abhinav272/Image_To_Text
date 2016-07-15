@@ -130,7 +130,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             if (al != null && al.size() > 0) {
                 Intent intent = new Intent(HomeActivity.this, TextViewer.class);
                 intent.putExtra("all_text", al);
-                Log.e(TAG, "onActivityResult: Size " + al.size());
                 startActivity(intent);
             } else {
                 showNoDataDialog();
