@@ -1,14 +1,21 @@
 package com.abhinavsharma.imagetotext;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -42,20 +49,34 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private AlertDialog alertDialog;
     private ArrayList al;
     private CustomListViewAdapterIV customListViewAdapter;
+    private Bundle extras;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
         initializeViews();
     }
 
-    private void initializeViews() {
-        btnCamera = (Button) findViewById(R.id.camera);
-        lvAllText = (ListView) findViewById(R.id.lv_all_text);
-//        String recents = Preferences.getInstance().getRecents(getApplicationContext());
-//        al = new Gson().fromJson(recents,ArrayList.class);
+    private void requestStoragePermission() {
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
+            if(ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(HomeActivity.this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
+            }else {
+                if (extras != null) {
+                    new MyAsyncTask(this).execute(extras);
+                }
+            }
+        } else {
+            if (extras != null) {
+                new MyAsyncTask(this).execute(extras);
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         try{
             al = Utils.getAllFiles();
         }catch (Exception e){
@@ -66,6 +87,14 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             lvAllText.setAdapter(customListViewAdapter);
             lvAllText.setOnItemClickListener(this);
         }
+    }
+
+    private void initializeViews() {
+        btnCamera = (Button) findViewById(R.id.camera);
+        lvAllText = (ListView) findViewById(R.id.lv_all_text);
+//        String recents = Preferences.getInstance().getRecents(getApplicationContext());
+//        al = new Gson().fromJson(recents,ArrayList.class);
+
         btnCamera.setOnClickListener(this);
     }
 
@@ -73,19 +102,52 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.camera:
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
+                    if(ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.CAMERA)!= PackageManager.PERMISSION_GRANTED){
+                        ActivityCompat.requestPermissions(HomeActivity.this,new String[]{Manifest.permission.CAMERA},0);
+                    }
+                    else {
+                        shootPhotoIntent();
+                    }
+
+                } else {
+                    shootPhotoIntent();
                 }
                 break;
         }
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == 0){
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                shootPhotoIntent();
+            } else Toast.makeText(HomeActivity.this, "You did not gave the CAMERA Permission", Toast.LENGTH_SHORT).show();
+        }
+
+        if(requestCode == 1){
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                if (extras != null) {
+                    new MyAsyncTask(this).execute(extras);
+                }
+            } else Toast.makeText(HomeActivity.this, "You did not gave the STORAGE Permission", Toast.LENGTH_SHORT).show();
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private void shootPhotoIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            new MyAsyncTask(this).execute(extras);
+            this.extras = data.getExtras();
+            requestStoragePermission();
         }
     }
 
@@ -129,7 +191,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
 
-            filePath = Utils.saveImageToLocal(imageBitmap);
+
 
             SparseArray<TextBlock> textBlockSparseArray = textRecognizer.detect(frame);
             if (textBlockSparseArray != null) {
@@ -137,6 +199,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 for (int i = 0; i < textBlockSparseArray.size(); i++) {
                     if (textBlockSparseArray.valueAt(i).getValue() != null) {
                         al.add(textBlockSparseArray.valueAt(i).getValue());
+                        filePath = Utils.saveImageToLocal(imageBitmap);
                         if (filePath != null) {
                             Preferences.getInstance().setImageTextData(mContext, filePath, textBlockSparseArray.valueAt(i).getValue());
                         }
