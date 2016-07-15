@@ -14,12 +14,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.abhinavsharma.imagetotext.adapters.CustomListViewAdapter;
+import com.abhinavsharma.imagetotext.adapters.CustomListViewAdapterIV;
 import com.abhinavsharma.imagetotext.helper.Preferences;
+import com.abhinavsharma.imagetotext.helper.Utils;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
@@ -30,7 +33,7 @@ import java.util.ArrayList;
 /**
  * Created by abhinavsharma on 14/07/16.
  */
-public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
+public class HomeActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
 
     private static final String TAG = "HomeActivity";
     private Button btnCamera;
@@ -38,7 +41,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private AlertDialog alertDialog;
     private ArrayList al;
-    private CustomListViewAdapter customListViewAdapter;
+    private CustomListViewAdapterIV customListViewAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,11 +54,17 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private void initializeViews() {
         btnCamera = (Button) findViewById(R.id.camera);
         lvAllText = (ListView) findViewById(R.id.lv_all_text);
-        String recents = Preferences.getInstance().getRecents(getApplicationContext());
-        al = new Gson().fromJson(recents,ArrayList.class);
+//        String recents = Preferences.getInstance().getRecents(getApplicationContext());
+//        al = new Gson().fromJson(recents,ArrayList.class);
+        try{
+            al = Utils.getAllFiles();
+        }catch (Exception e){
+
+        }
         if (al != null) {
-            customListViewAdapter = new CustomListViewAdapter(this,al);
+            customListViewAdapter = new CustomListViewAdapterIV(this, al);
             lvAllText.setAdapter(customListViewAdapter);
+            lvAllText.setOnItemClickListener(this);
         }
         btnCamera.setOnClickListener(this);
     }
@@ -80,10 +89,18 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Intent previewIntent = new Intent(HomeActivity.this, PreviewActivity.class);
+        previewIntent.putExtra("imagePath", (String) al.get(position));
+        startActivity(previewIntent);
+    }
+
     class MyAsyncTask extends AsyncTask<Bundle, Void, Void> {
 
         private Context mContext;
         private ArrayList<String> al;
+        private String filePath;
 
         public MyAsyncTask(Context context) {
             this.mContext = context;
@@ -112,12 +129,17 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
 
+            filePath = Utils.saveImageToLocal(imageBitmap);
+
             SparseArray<TextBlock> textBlockSparseArray = textRecognizer.detect(frame);
             if (textBlockSparseArray != null) {
                 al = new ArrayList<>();
                 for (int i = 0; i < textBlockSparseArray.size(); i++) {
                     if (textBlockSparseArray.valueAt(i).getValue() != null) {
                         al.add(textBlockSparseArray.valueAt(i).getValue());
+                        if (filePath != null) {
+                            Preferences.getInstance().setImageTextData(mContext, filePath, textBlockSparseArray.valueAt(i).getValue());
+                        }
                     }
                 }
 

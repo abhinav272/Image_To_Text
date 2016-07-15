@@ -25,5 +25,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.google.code.gson:gson:2.2.+'
     compile 'com.google.android.gms:play-services-vision:9.0.0+'
+    compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.google.apis:google-api-services-vision:v1-rev19-1.22.0'
 }

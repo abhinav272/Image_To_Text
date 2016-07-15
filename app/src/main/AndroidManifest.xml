@@ -20,6 +20,7 @@
         </activity>
         <activity android:name=".HomeActivity"></activity>
         <activity android:name=".TextViewer"></activity>
+        <activity android:name=".PreviewActivity"></activity>
     </application>
 
 </manifest>

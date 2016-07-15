@@ -1,5 +1,6 @@
 package com.abhinavsharma.imagetotext;
 
+import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
@@ -7,5 +8,6 @@ import android.widget.TextView;
  */
 public class ViewHolder {
     public TextView tvString;
+    public ImageView imageView;
 
 }

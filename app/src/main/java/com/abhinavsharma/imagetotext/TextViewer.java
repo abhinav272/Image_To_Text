@@ -36,29 +36,29 @@ public class TextViewer extends AppCompatActivity {
             lvDisplay = (ListView) findViewById(R.id.lv_image_all_text);
             CustomListViewAdapter customListViewAdapter = new CustomListViewAdapter(this, al);
             lvDisplay.setAdapter(customListViewAdapter);
-            new UpdatePreferencesTask(getApplicationContext()).execute(al);
+//            new UpdatePreferencesTask(getApplicationContext()).execute(al);
         }
     }
 
-    public class UpdatePreferencesTask extends AsyncTask<ArrayList<String>, Void, Void>{
-
-        private Context mContext;
-        private ArrayList recents;
-
-        public UpdatePreferencesTask(Context mContext) {
-            this.mContext = mContext;
-        }
-
-        @Override
-        protected Void doInBackground(ArrayList<String>... params) {
-            String jsonText = Preferences.getInstance().getRecents(mContext);
-            recents = new Gson().fromJson(jsonText,ArrayList.class);
-            if (recents == null) recents = new ArrayList();
-            recents.addAll(params[0]);
-            jsonText = new Gson().toJson(recents);
-            Log.e("doInBackground after :", jsonText);
-            Preferences.getInstance().setRecents(mContext,jsonText);
-            return null;
-        }
-    }
+//    public class UpdatePreferencesTask extends AsyncTask<ArrayList<String>, Void, Void>{
+//
+//        private Context mContext;
+//        private ArrayList recents;
+//
+//        public UpdatePreferencesTask(Context mContext) {
+//            this.mContext = mContext;
+//        }
+//
+//        @Override
+//        protected Void doInBackground(ArrayList<String>... params) {
+//            String jsonText = Preferences.getInstance().getRecents(mContext);
+//            recents = new Gson().fromJson(jsonText,ArrayList.class);
+//            if (recents == null) recents = new ArrayList();
+//            recents.addAll(params[0]);
+//            jsonText = new Gson().toJson(recents);
+//            Log.e("doInBackground after :", jsonText);
+//            Preferences.getInstance().setRecents(mContext,jsonText);
+//            return null;
+//        }
+//    }
 }
